@@ -8,6 +8,8 @@ yarn create vite client --template vue
 cd client
 yarn
 
+yarn add axios
+
 cd server
 yarn add express
 touch app.js
