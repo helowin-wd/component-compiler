@@ -12,3 +12,8 @@ cd server
 yarn add express
 touch app.js
 ```
+
+整体流程：
+
+1. 传递 JSON数据 到 Server端
+2. Server端 编译 JSON数据 为 xxx.vue 文件
