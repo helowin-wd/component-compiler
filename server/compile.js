@@ -1,4 +1,4 @@
-const { readFileSync } = require('fs')
+const { readFileSync, existsSync, rmdirSync, mkdirSync, writeFileSync } = require('fs')
 const { resolve } = require('path')
 const tagList = JSON.parse(readFileSync(resolve(__dirname, 'data/tag.json'), 'utf-8'))
 const eventList = JSON.parse(readFileSync(resolve(__dirname, 'data/event.json'), 'utf-8'))
@@ -21,9 +21,31 @@ module.exports = function (filename, fileJSON) {
   }
   const template = compileTemplate(fileJSON, data)
   const { script, states, handler } = compileScript(data)
-  console.log('script\n', script)
-  console.log('states\n', states)
-  console.log('handler\n', handler)
+  // console.log('script\n', script)
+  // console.log('states\n', states)
+  // console.log('handler\n', handler)
+
+  // 创建文件夹
+  mkdirSync(resolve(__dirname, `output`))
+
+  const exist = existsSync(resolve(__dirname, `output/${filename}`))
+  // 文件夹名存在，删除文件夹/文件夹
+  if (exist) {
+    rmdirSync(resolve(__dirname, `output/${filename}`), {
+      recursive: true, // 删除子文件夹
+      force: true
+    })
+  }
+  // 创建文件夹
+  mkdirSync(resolve(__dirname, `output/${filename}`))
+  // 写入文件
+  writeFileSync(resolve(__dirname, `output/${filename}/index.vue`), createVueComponent(template, script))
+  writeFileSync(resolve(__dirname, `output/${filename}/handlers.js`), handler)
+  writeFileSync(resolve(__dirname, `output/${filename}/states.js`), `import { ref } from 'vue'; ${ states }`)
+
+  function createVueComponent(template, script) {
+    return `<template>${template}</template> \n <script setup>${script}</script>`
+  }
 
   function compileTemplate(json, data) {
     const { tag, children, className, states, props, computed, text, events } = json

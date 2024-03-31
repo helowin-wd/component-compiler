@@ -4,7 +4,7 @@ import axios from "axios"
 
 const getData = async () => {
   await axios.post("http://localhost:3000/compile", {
-    filename: "Counter.vue",
+    filename: "Counter",
     fileJSON: {
       "tag": "div",
       "className": ["app", "app1"],
