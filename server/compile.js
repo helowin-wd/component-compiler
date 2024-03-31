@@ -20,7 +20,7 @@ module.exports = function (filename, fileJSON) {
     handlers: {}
   }
   const template = compileTemplate(fileJSON, data)
-  console.log('template==', template)
+  compileScript(data)
 
   function compileTemplate(json, data) {
     const { tag, children, className, states, props, computed, text, events } = json
@@ -60,8 +60,8 @@ module.exports = function (filename, fileJSON) {
     if (states) {
       // {{ count + count1 }}
       html += `{{ ${Object.keys(states).join('+')} }}`
-      data.states = {
-        ...data.states,
+      data.state = {
+        ...data.state,
         ...states
       }
     }
@@ -97,4 +97,9 @@ module.exports = function (filename, fileJSON) {
 
     return html
   }
+}
+
+function compileScript(data) {
+  const { state, props, computed, handlers } = data;
+  console.log('---', { state, props, computed, handlers })
 }
