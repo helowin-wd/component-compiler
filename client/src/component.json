@@ -1,6 +1,6 @@
 {
   "tag": "div",
-  "className": "[counter]",
+  "className": ["counter"],
   "children": [
     {
       "tag": "h1",
@@ -27,7 +27,8 @@
           "handleAddBtnClick()": "count.value += 1",
           "handleShowCount()": "console.log(count.value)"
         }
-      }
+      },
+      "text": "ADD"
     }
   ]
 }
