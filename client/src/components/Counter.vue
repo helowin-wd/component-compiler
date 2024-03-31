@@ -3,7 +3,7 @@
     <h1>{{ title }}</h1>
     <h2>{{ count }}</h2>
     <h3>{{ doubleCount }}</h3>
-    <button @click="handleAddBtnClick(), handleShowCount()">按钮</button>
+    <button @click="handleAddBtnClick($event), handleShowCount()">按钮</button>
    </div>
 </template>
 

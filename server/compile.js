@@ -20,7 +20,10 @@ module.exports = function (filename, fileJSON) {
     handlers: {}
   }
   const template = compileTemplate(fileJSON, data)
-  compileScript(data)
+  const { script, states, handler } = compileScript(data)
+  console.log('script\n', script)
+  console.log('states\n', states)
+  console.log('handler\n', handler)
 
   function compileTemplate(json, data) {
     const { tag, children, className, states, props, computed, text, events } = json
@@ -41,7 +44,7 @@ module.exports = function (filename, fileJSON) {
           return new Error('事件名称不存在')
         }
 
-        html += `@${k}="${ Object.keys(events[k]).join(',') }"`;
+        html += `@${k}="${Object.keys(events[k]).join(',')}"`
 
         data.handlers = {
           ...data.handlers,
@@ -51,7 +54,7 @@ module.exports = function (filename, fileJSON) {
     }
 
     // 闭合
-    html = html.trim() + '>';
+    html = html.trim() + '>'
 
     if (text) {
       html += text
@@ -100,6 +103,77 @@ module.exports = function (filename, fileJSON) {
 }
 
 function compileScript(data) {
-  const { state, props, computed, handlers } = data;
-  console.log('---', { state, props, computed, handlers })
+  const { state, props, computed, handlers } = data
+  // console.log('---', { state, props, computed, handlers })
+
+  // vue依赖
+  const vueDeps = []
+  let script = ''
+  let handler = ''
+  let states = ''
+  let handlerBody = []
+
+  if (Object.keys(computed).length) {
+    vueDeps.push('computed')
+  }
+  script += `import { ${vueDeps.join(',')} } from 'vue';\n`
+
+  /**
+   * 处理事件 handlers
+   */
+
+  for (let handlerName in handlers) {
+    // 匹配 () 里面的内容
+    const matched = handlerName.match(/\((.*?)\)/)
+    if (matched) {
+      const hName = handlerName.replace(/\(.*?\)/, '')
+      script += `import { ${hName} } from './handlers.js';`
+      handler += `export const ${hName} = (${matched[1]}) => { ${handlers[handlerName]} }\n`
+    } else {
+      script += `import { ${handlerName} } from './handlers.js'\n`
+      handler += `export const ${handlerName} = () => { ${handlers[handlerName]} }\n`
+    }
+    handlerBody.push(handlers[handlerName])
+  }
+
+  /**
+   * 处理 state
+   */
+
+  for (let s in state) {
+    states += `export const ${s} = ref(${state[s]});\n`
+    script += `import { ${s} } from './states.js';\n`
+
+    for (let body of handlerBody) {
+      if (body.includes(s)) {
+        const impt = `import {${s}} from './states.js';\n`
+        if (!handler.includes(impt)) {
+          handler = impt + handler
+        }
+      }
+    }
+  }
+
+  /**
+   * 处理props
+   */
+  script += `const props = defineProps({
+    ${Object.keys(props).reduce((prev, next) => {
+      prev += `${next}: ${props[next]},`
+      return prev
+    }, '')}
+  })\n`
+
+  /**
+   * 处理计算属性 computed
+   */
+  for (const key in computed) {
+    script += `const ${key} = computed(() => ${computed[key]})\n`
+  }
+
+  return {
+    script,
+    states,
+    handler
+  }
 }

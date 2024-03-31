@@ -31,7 +31,7 @@ const getData = async () => {
           "tag": "button",
           "events": {
             "click": {
-              "handleAddBtnClick()": "count.value += 1",
+              "handleAddBtnClick($event)": "count.value += 1",
               "handleShowCount()": "console.log(count.value)"
             }
           },
